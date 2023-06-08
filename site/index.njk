@@ -1,0 +1,23 @@
+---
+title: Welcome to Lume
+tags:
+  - first
+  - second
+  - third
+---
+
+<h1>{{ title | upper | reverse }}</h1>
+
+<p>Hello world</p>
+
+<p>This is LUME</p>
+
+{{ tags | dump(2) }}
+
+<ol>
+{% for tag in tags %}
+<li>{{ tag }}</li>
+{% endfor %}
+</ol>
+
+{{ obj | dump(2) }}
