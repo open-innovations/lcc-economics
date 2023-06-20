@@ -1,3 +1,27 @@
 html {
   font-family: monospace;
 }
+
+.dashboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+ul.dashboard {
+  margin: 0;
+  padding: 0;
+}
+.dashboard li {
+  min-width: 20em;
+  color: white;
+  background: black;
+  padding: 1em;
+  margin: 0;
+}
+.dashboard a {
+  color: inherit;
+}
+.dashboard li > * {
+  margin: 0;
+  padding: 0;
+}
