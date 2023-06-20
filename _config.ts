@@ -13,6 +13,8 @@ const site = lume({
   location: new URL("https://open-innovations.github.io/lcc-economics/"),
 });
 
+site.copy(['.css']);
+
 site.loadData([".csv"], csvLoader);
 site.process([".html"], autoDependency);
 
