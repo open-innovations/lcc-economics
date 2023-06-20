@@ -5,7 +5,9 @@
     "serve": "deno task lume -s"
   },
   "imports": {
-    "lume/": "https://deno.land/x/lume@v1.17.4/"
+    "lume/": "https://deno.land/x/lume@v1.17.4/",
+    "std/": "https://deno.land/std@0.151.0/",
+    "oi-lume-charts/": "https://deno.land/x/oi_lume_charts@v0.8.0/"
   },
   "lock": false
 }
