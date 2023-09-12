@@ -3,6 +3,7 @@ library(patchwork)
 library(bslib)
 library(bsicons)
 library(DT)
+library(plotly)
 
 # UI ----------------------------------------------------------------------
 
@@ -13,6 +14,7 @@ ui <- bslib::page_fluid(
     id = "navbar",
     collapsible = TRUE,
     windowTitle = "Leeds Inclusive Growth Dashboard",
+    header = uiOutput("filter_2018"),
 
     tabPanel(
       title = "Dashboard",
@@ -74,20 +76,34 @@ server <- function(input, output, session) {
 
   vNames <- unique(data1$variable_name[data1$is_summary])
 
+  data <- reactive({
+    if (input$filter_2018) {
+      dplyr::filter(data1, date >= "2018-01-01")
+    } else {
+      data1
+    }
+  })
+
+  output$filter_2018 <- renderUI({
+    checkboxInput("filter_2018",
+                  label = "Show only data from 2018 onwards",
+                  value = TRUE)
+  })
+
   # Generate dynamic UI components ----------------------------------------
 
-  library(plotly)
-
-  mini_plots <- lapply(seq_along(vNames), function(x) {
-    data1 |>
-      dplyr::filter(geography_name == 'Leeds',
-                    variable_name == vNames[x],
-                    is_summary,
-                    !is.na(value))
+  mini_plots <- reactive({
+    lapply(seq_along(vNames), function(x) {
+      data() |>
+        dplyr::filter(geography_name == 'Leeds',
+                      variable_name == vNames[x],
+                      is_summary,
+                      !is.na(value))
+    })
   })
 
   build_mini_plots <- function(x) {
-    sparkline <- plot_ly(mini_plots[[x]]) %>%
+    sparkline <- plot_ly(mini_plots()[[x]]) %>%
       add_lines(
         x = ~date, y = ~value,
         color = I("#ED7218"), span = I(1)#,
@@ -117,7 +133,7 @@ server <- function(input, output, session) {
 
   output$dashboardUI <- renderUI({
     latest_indictors <- lapply(seq_along(vNames), function(x) {
-      tempdata <- data1 |>
+      tempdata <- data() |>
         dplyr::filter(geography_name == 'Leeds',
                       variable_name == vNames[x],
                       is_summary,
@@ -154,7 +170,7 @@ server <- function(input, output, session) {
   output$headlineUI <- renderUI({
     plots <- lapply(seq_along(vNames), function(x) {
       renderPlotly({ # change HERE
-        p <- data1 |>
+        p <- data() |>
           dplyr::filter(geography_name == 'Leeds',
                         variable_name == vNames[x],
                         is_summary,
@@ -172,9 +188,9 @@ server <- function(input, output, session) {
     })
 
     list(
-      checkboxInput("headline_2018",
-                    label = "Show only 2018 onwards",
-                    value = TRUE),
+      # checkboxInput("headline_2018",
+      #               label = "Show only 2018 onwards",
+      #               value = TRUE),
       layout_column_wrap(
         width = 1/4,
         !!!plots
@@ -189,11 +205,11 @@ server <- function(input, output, session) {
       value = stringr::str_replace_all(vNames[i], " ", "-"),
 
       list(
-        checkboxInput("details_2018",
-                      label = "Show only 2018 onwards",
-                      value = TRUE),
+        # checkboxInput("details_2018",
+        #               label = "Show only 2018 onwards",
+        #               value = TRUE),
         renderPlotly({ # change HERE
-          cities <- data1 |>
+          cities <- data() |>
             dplyr::filter(variable_name == vNames[i]) |>
             dplyr::filter(geography_core_city == TRUE) |>
             dplyr::filter(!is.na(value)) |>
@@ -215,7 +231,7 @@ server <- function(input, output, session) {
 
           cities <- ggplotly(cities, tooltip = c("geography_name", "value"))
 
-          others <- data1 |>
+          others <- data() |>
             dplyr::filter(variable_name == vNames[i]) |>
             dplyr::filter(geography_core_city == FALSE |
                             geography_name == "Leeds") |>
@@ -235,7 +251,7 @@ server <- function(input, output, session) {
 
           this_category <- unique(data1$category[data1$variable_name == vNames[i]])
 
-          breakdown <- data1 |>
+          breakdown <- data() |>
             dplyr::filter(category == this_category,
                           !is_summary,
                           geography_name == "Leeds",
