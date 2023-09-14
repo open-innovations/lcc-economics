@@ -1,0 +1,6 @@
+layout: templates/base.njk
+
+
+metas:
+  site: Leeds City Council Inclusive Growth Dashboard
+  title: "=title"

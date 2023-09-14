@@ -1,0 +1,32 @@
+---
+title: Employment data
+---
+
+<p>
+A page about employment data
+</p>
+
+<ul>
+<li>{{ headlines.proportion_employed }}%</li>
+</ul>
+
+
+{{ comp.oi.chart.line({
+  config: {
+    data: by_month,
+    series: [
+      {
+        title: 'Employment rate',
+        x: 'month',
+        y: 'employment_rate',
+        colour: '#e52e36'
+      }
+    ]
+  }
+}) | safe }}
+
+
+<pre>
+  {{ by_month | dump(2) }}
+</pre>
+
