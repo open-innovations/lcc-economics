@@ -37,12 +37,12 @@ ui <- bslib::page_fluid(
       uiOutput("data_table")
     ),
 
-    tabPanel(
-      title = "About",
-      value = "about",
-      titlePanel("About the Inclusive Growth Dashboard"),
-      p("TODO Insert copy here ...")
-    )
+    # tabPanel(
+    #   title = "About",
+    #   value = "about",
+    #   titlePanel("About the Inclusive Growth Dashboard"),
+    #   p("TODO Insert copy here ...")
+    # )
   )
 )
 
@@ -310,13 +310,13 @@ server <- function(input, output, session) {
 
   output$data_table <- renderUI({
     list(
-      selectizeInput("place", "place",
+      selectizeInput("place", "Which places to include?",
                   choices = unique(data1$geography_name),
                   selected = "Leeds",
                   multiple = TRUE,
                   options = list(plugins = list("remove_button"))
       ),
-      selectizeInput("category", "category",
+      selectizeInput("category", "Which categories to include?",
                   choices = unique(data1$category),
                   selected = "Employment",
                   multiple = TRUE,
