@@ -187,14 +187,9 @@ server <- function(input, output, session) {
       })
     })
 
-    list(
-      # checkboxInput("headline_2018",
-      #               label = "Show only 2018 onwards",
-      #               value = TRUE),
-      layout_column_wrap(
-        width = 1/4,
-        !!!plots
-      )
+    layout_column_wrap(
+      width = 1/4,
+      !!!plots
     )
   })
 
@@ -204,95 +199,88 @@ server <- function(input, output, session) {
       title = vNames[i],
       value = stringr::str_replace_all(vNames[i], " ", "-"),
 
-      list(
-        # checkboxInput("details_2018",
-        #               label = "Show only 2018 onwards",
-        #               value = TRUE),
-        renderPlotly({ # change HERE
-          cities <- data() |>
-            dplyr::filter(variable_name == vNames[i]) |>
-            dplyr::filter(geography_core_city == TRUE) |>
-            dplyr::filter(!is.na(value)) |>
-            dplyr::group_by(geography_name) |> #ajslkdf;ja
+      renderPlotly({ # change HERE
+        cities <- data() |>
+          dplyr::filter(variable_name == vNames[i]) |>
+          dplyr::filter(geography_core_city == TRUE) |>
+          dplyr::filter(!is.na(value)) |>
+          dplyr::group_by(geography_name) |> #ajslkdf;ja
+          ggplot2::ggplot(ggplot2::aes(x = date, y = value,
+                                       colour = geography_name != "Leeds",
+                                       group = geography_name)) +
+          ggplot2::geom_line() +
+          # gghighlight::gghighlight(geography_name == "Leeds",
+          #                          use_direct_label = FALSE) +
+          plot.theme +
+          ggplot2::scale_color_manual(values = c("red", "lightgrey"))
+        ggplot2::labs(#title = "Core Cities",
+          subtitle = vNames[i],
+          x = "",
+          y = "%",
+          colour = "") +
+          ggplot2::theme(legend.position = "top")
+
+        cities <- ggplotly(cities, tooltip = c("geography_name", "value"))
+
+        others <- data() |>
+          dplyr::filter(variable_name == vNames[i]) |>
+          dplyr::filter(geography_core_city == FALSE |
+                          geography_name == "Leeds") |>
+          dplyr::filter(!is.na(value)) |>
+          ggplot2::ggplot(ggplot2::aes(x = date, y = value,
+                                       colour = geography_name)) +
+          ggplot2::geom_line() +
+          plot.theme +
+          ggplot2::labs(#title = "Other geographies",
+            subtitle = vNames[i],
+            x = "",
+            y = "%",
+            colour = "") +
+          ggplot2::theme(legend.position = "top")
+
+        others <- ggplotly(others)
+
+        this_category <- unique(data1$category[data1$variable_name == vNames[i]])
+
+        breakdown <- data() |>
+          dplyr::filter(category == this_category,
+                        !is_summary,
+                        geography_name == "Leeds",
+                        !is.na(value),
+                        !grepl("G-U", variable_name)) |> # emp by industry
+          dplyr::mutate(variable_name = variable_name |>
+                          stringr::str_remove("% all in employment who work in - ") |>
+                          stringr::str_remove("\\(SIC 2007\\)") |>
+                          stringr::str_remove("% of economically inactive ") |>
+                          stringr::str_remove("% who are economically inactive - "))
+
+        if (this_category == "Economic inactivity") {
+          breakdown <- breakdown |>
+            dplyr::mutate(sub_category = ifelse(grepl("aged", variable_name),
+                                                "Inactivity by age",
+                                                "Inactivity by reason"))
+        }
+
+        if (nrow(breakdown) > 0) {
+          breakdown <- breakdown |>
             ggplot2::ggplot(ggplot2::aes(x = date, y = value,
-                                         colour = geography_name != "Leeds",
-                                         group = geography_name)) +
+                                         colour = variable_name)) +
             ggplot2::geom_line() +
-            # gghighlight::gghighlight(geography_name == "Leeds",
-            #                          use_direct_label = FALSE) +
+            {if ("sub_category" %in% names(breakdown)) ggplot2::facet_wrap("sub_category") } +
             plot.theme +
-            ggplot2::scale_color_manual(values = c("red", "lightgrey"))
-            ggplot2::labs(#title = "Core Cities",
-                          subtitle = vNames[i],
-                          x = "",
+            ggplot2::labs(x = "",
                           y = "%",
-                          colour = "") +
-            ggplot2::theme(legend.position = "top")
+                          colour = "")
 
-          cities <- ggplotly(cities, tooltip = c("geography_name", "value"))
+          breakdown <- ggplotly(breakdown)
 
-          others <- data() |>
-            dplyr::filter(variable_name == vNames[i]) |>
-            dplyr::filter(geography_core_city == FALSE |
-                            geography_name == "Leeds") |>
-            dplyr::filter(!is.na(value)) |>
-            ggplot2::ggplot(ggplot2::aes(x = date, y = value,
-                                         colour = geography_name)) +
-            ggplot2::geom_line() +
-            plot.theme +
-            ggplot2::labs(#title = "Other geographies",
-                          subtitle = vNames[i],
-                          x = "",
-                          y = "%",
-                          colour = "") +
-            ggplot2::theme(legend.position = "top")
-
-          others <- ggplotly(others)
-
-          this_category <- unique(data1$category[data1$variable_name == vNames[i]])
-
-          breakdown <- data() |>
-            dplyr::filter(category == this_category,
-                          !is_summary,
-                          geography_name == "Leeds",
-                          !is.na(value),
-                          !grepl("G-U", variable_name)) |> # emp by industry
-            dplyr::mutate(variable_name = variable_name |>
-                            stringr::str_remove("% all in employment who work in - ") |>
-                            stringr::str_remove("\\(SIC 2007\\)") |>
-                            stringr::str_remove("% of economically inactive ") |>
-                            stringr::str_remove("% who are economically inactive - "))
-
-          if (this_category == "Economic inactivity") {
-            breakdown <- breakdown |>
-              dplyr::mutate(sub_category = ifelse(grepl("aged", variable_name),
-                                                  "Inactivity by age",
-                                                  "Inactivity by reason"))
-          }
-
-          if (nrow(breakdown) > 0) {
-            breakdown <- breakdown |>
-              ggplot2::ggplot(ggplot2::aes(x = date, y = value,
-                                           colour = variable_name)) +
-              ggplot2::geom_line() +
-              {if ("sub_category" %in% names(breakdown)) ggplot2::facet_wrap("sub_category") } +
-              plot.theme +
-              ggplot2::labs(x = "",
-                            y = "%",
-                            colour = "")
-
-            breakdown <- ggplotly(breakdown)
-
-            # print((cities + others) / breakdown)
-            subplot(style(cities, showlegend = F), others, breakdown, nrows = 2)
-          } else {
-            # print(cities + others)
-            subplot(style(cities, showlegend = F), others)
-          }
-        })
-      )
-
-
+          # print((cities + others) / breakdown)
+          subplot(style(cities, showlegend = F), others, breakdown, nrows = 2)
+        } else {
+          # print(cities + others)
+          subplot(style(cities, showlegend = F), others)
+        }
+      })
     )
   })
 
@@ -308,15 +296,33 @@ server <- function(input, output, session) {
 
   # Data table
 
+  data_table_output <- reactive({
+    data() |>
+      dplyr::filter(geography_name %in% input$place,
+                    category %in% input$category) |>
+      dplyr::select(date = date_name,
+                    geography_code,
+                    geography_name,
+                    category,
+                    variable_name,
+                    value)
+  })
+
   output$data_table <- renderUI({
     list(
-      DT::renderDT(data1 |>
-                     dplyr::select(date = date_name,
-                                   geography_code,
-                                   geography_name,
-                                   category,
-                                   variable_name,
-                                   value)),
+      selectizeInput("place", "place",
+                  choices = unique(data1$geography_name),
+                  selected = "Leeds",
+                  multiple = TRUE,
+                  options = list(plugins = list("remove_button"))
+      ),
+      selectizeInput("category", "category",
+                  choices = unique(data1$category),
+                  selected = "Employment",
+                  multiple = TRUE,
+                  options = list(plugins = list("remove_button"))
+      ),
+      DT::renderDT(data_table_output()),
       downloadButton("download_data",
                      label = "Download as CSV")
     )
@@ -327,7 +333,7 @@ server <- function(input, output, session) {
       paste0("leeds-inclusive-growth-data_", Sys.Date(), ".csv")
     },
     content = function(file) {
-      readr::write_csv(data1, file)
+      readr::write_csv(data_table_output(), file)
     }
   )
 }
