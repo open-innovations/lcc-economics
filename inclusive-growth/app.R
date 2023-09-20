@@ -6,34 +6,38 @@ library(plotly)
 
 # UI ----------------------------------------------------------------------
 
+logos <- div(
+  p("A microsite built by Open Innovations",
+    style = "font-size: 0.8em; float:right; text-align:center"),
+  img(
+    src = "oi-square.png",
+    height = 50,
+    width = 50,
+    style = "float:right; margin-left: 10px"
+  ),
+  img(
+    src = "lcc-logo.png",
+    height = 50,
+    style = "float:right"
+  ),
+  style = "height:50px; margin-top: 10px"
+)
+
 ui <- bslib::page_fluid(
   #fluidPage(
-  navbarPage(
+  bslib::page_navbar(
+  #navbarPage(
     title = "Leeds Inclusive Growth Dashboard",
     id = "navbar",
     collapsible = TRUE,
-    windowTitle = "Leeds Inclusive Growth Dashboard",
+    bg = "#1BACAF",
+    window_title = "Leeds Inclusive Growth Dashboard",
+    #windowTitle = "Leeds Inclusive Growth Dashboard",
     header = list(
-      div(
-        p("A microsite built by Open Innovations",
-          style = "font-size: 0.8em; float:right; text-align:center"),
-        img(
-          src = "oi-square.png",
-          height = 50,
-          width = 50,
-          style = "float:right; margin-left: 10px"
-        ),
-        img(
-          src = "lcc-logo.png",
-          height = 50,
-          # width = 100#,
-          style = "float:right"
-        ),
-        style = "height:50px; margin-top: 10px"
-      ),
+      logos,
       p(
         paste(
-          "This is a site in active development and subject to change. Last update on",
+          "This is a site in active development and subject to change. Last updated on",
           format(file.info("all_data.csv")$mtime, "%d %B %Y at %H:%M")
         ),
         style = "background-color: #1BACAF!important; text-align: center;
@@ -41,23 +45,7 @@ ui <- bslib::page_fluid(
       ),
       uiOutput("filter_2018")
     ),
-    footer = div(
-      p("A microsite built by Open Innovations",
-        style = "font-size: 0.8em; float:right; text-align:center"),
-      img(
-        src = "oi-square.png",
-        height = 50,
-        width = 50,
-        style = "float:right; margin-left: 10px"
-      ),
-      img(
-        src = "lcc-logo.png",
-        height = 50,
-        # width = 100#,
-        style = "float:right"
-      ),
-      style = "height:50px; margin-top: 10px"
-    ),
+    footer = logos,
 
     tabPanel(
       title = "Dashboard",
@@ -206,7 +194,7 @@ server <- function(input, output, session) {
         # showcase = bs_icon("bar-chart"),
         showcase = build_mini_plots(x),
         full_screen = TRUE,
-        em(unique(tempdata$variable_name_full)),
+        em(unique(tempdata$variable_name_full), style = "font-size:0.8em"),
         p(
           paste(
             "Latest data is for",
