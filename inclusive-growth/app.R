@@ -341,20 +341,20 @@ server <- function(input, output, session) {
   output$data_table <- renderUI({
     list(
       selectizeInput("place", "Which places to include?",
-                  choices = unique(data1$geography_name),
-                  selected = "Leeds",
-                  multiple = TRUE,
-                  options = list(plugins = list("remove_button"))
+                     choices = unique(data1$geography_name),
+                     selected = "Leeds",
+                     multiple = TRUE,
+                     options = list(plugins = list("remove_button"))
       ),
       selectizeInput("category", "Which categories to include?",
-                  choices = unique(data1$category),
-                  selected = "Employment",
-                  multiple = TRUE,
-                  options = list(plugins = list("remove_button"))
+                     choices = unique(data1$category),
+                     selected = "Employment",
+                     multiple = TRUE,
+                     options = list(plugins = list("remove_button"))
       ),
-      DT::renderDT(data_table_output()),
       downloadButton("download_data",
-                     label = "Download as CSV")
+                     label = "Download as CSV"),
+      DT::renderDT(data_table_output())
     )
   })
 
