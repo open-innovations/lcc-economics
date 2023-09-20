@@ -17,7 +17,7 @@ ui <- bslib::page_fluid(
       p(
         paste(
           "This is a site in active development. Last update on",
-          format(file.info("all_data.csv")$mtime, "%d %B %Y")
+          format(file.info("all_data.csv")$mtime, "%d %B %Y at %H:%M")
         ),
         style = "background-color: #1BACAF!important; text-align: center"
       ),
