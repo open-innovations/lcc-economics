@@ -353,7 +353,8 @@ server <- function(input, output, session) {
                      options = list(plugins = list("remove_button"))
       ),
       downloadButton("download_data",
-                     label = "Download as CSV"),
+                     label = "Download as CSV"
+      ),
       DT::renderDT(data_table_output())
     )
   })
