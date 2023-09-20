@@ -308,6 +308,8 @@ server <- function(input, output, session) {
     data() |>
       dplyr::filter(geography_name %in% input$place,
                     category %in% input$category) |>
+      dplyr::mutate(variable_name = dplyr::coalesce(variable_name_full,
+                                                    variable_name)) |>
       dplyr::select(date = date_name,
                     geography_code,
                     geography_name,
