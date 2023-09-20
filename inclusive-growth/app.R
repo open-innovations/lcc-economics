@@ -1,7 +1,6 @@
 library(shiny)
 library(patchwork)
 library(bslib)
-library(bsicons)
 library(DT)
 library(plotly)
 
