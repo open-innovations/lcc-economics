@@ -14,14 +14,43 @@ ui <- bslib::page_fluid(
     collapsible = TRUE,
     windowTitle = "Leeds Inclusive Growth Dashboard",
     header = list(
+      div(
+        img(
+          src = "oi-square.png",
+          height = 50,
+          width = 50,
+          style = "float:right; margin-left: 10px"
+        ),
+        img(
+          src = "lcc-logo.png",
+          height = 50,
+          # width = 100#,
+          style = "float:right"
+        )
+      ),
       p(
         paste(
           "This is a site in active development. Last update on",
           format(file.info("all_data.csv")$mtime, "%d %B %Y at %H:%M")
         ),
-        style = "background-color: #1BACAF!important; text-align: center"
+        style = "background-color: #1BACAF!important; text-align: center;
+        padding: 10px"
       ),
       uiOutput("filter_2018")
+    ),
+    footer = div(
+      img(
+        src = "oi-square.png",
+        height = 50,
+        width = 50,
+        style = "float:right; margin-left: 10px"
+      ),
+      img(
+        src = "lcc-logo.png",
+        height = 50,
+        # width = 100#,
+        style = "float:right"
+      )
     ),
 
     tabPanel(
