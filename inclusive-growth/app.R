@@ -47,7 +47,10 @@ ui <- bslib::page_fluid(
         color: #FFFFFF;
         padding: 10px; margin-top: 10px"
       ),
-      uiOutput("filter_2018")
+      # uiOutput("filter_2018")
+      checkboxInput("filter_2018",
+                    label = "Show only data from 2018 onwards",
+                    value = TRUE)
     ),
     footer = logos,
 
@@ -126,11 +129,11 @@ server <- function(input, output, session) {
     }
   })
 
-  output$filter_2018 <- renderUI({
-    checkboxInput("filter_2018",
-                  label = "Show only data from 2018 onwards",
-                  value = TRUE)
-  })
+  # output$filter_2018 <- renderUI({
+  #   checkboxInput("filter_2018",
+  #                 label = "Show only data from 2018 onwards",
+  #                 value = TRUE)
+  # })
 
   # Generate dynamic UI components ----------------------------------------
 
