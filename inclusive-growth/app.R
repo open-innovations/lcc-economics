@@ -15,6 +15,8 @@ ui <- bslib::page_fluid(
     windowTitle = "Leeds Inclusive Growth Dashboard",
     header = list(
       div(
+        p("A microsite built by Open Innovations",
+          style = "font-size: 0.8em; float:right; text-align:center"),
         img(
           src = "oi-square.png",
           height = 50,
@@ -26,19 +28,22 @@ ui <- bslib::page_fluid(
           height = 50,
           # width = 100#,
           style = "float:right"
-        )
+        ),
+        style = "height:50px; margin-top: 10px"
       ),
       p(
         paste(
-          "This is a site in active development. Last update on",
+          "This is a site in active development and subject to change. Last update on",
           format(file.info("all_data.csv")$mtime, "%d %B %Y at %H:%M")
         ),
         style = "background-color: #1BACAF!important; text-align: center;
-        padding: 10px"
+        padding: 10px; margin-top: 10px"
       ),
       uiOutput("filter_2018")
     ),
     footer = div(
+      p("A microsite built by Open Innovations",
+        style = "font-size: 0.8em; float:right; text-align:center"),
       img(
         src = "oi-square.png",
         height = 50,
@@ -50,7 +55,8 @@ ui <- bslib::page_fluid(
         height = 50,
         # width = 100#,
         style = "float:right"
-      )
+      ),
+      style = "height:50px; margin-top: 10px"
     ),
 
     tabPanel(
@@ -165,12 +171,12 @@ server <- function(input, output, session) {
       config(displayModeBar = F) %>%
       htmlwidgets::onRender(
         "function(el) {
-      var ro = new ResizeObserver(function() {
-         var visible = el.offsetHeight > 200;
-         Plotly.relayout(el, {'xaxis.visible': visible});
-      });
-      ro.observe(el);
-    }"
+          var ro = new ResizeObserver(function() {
+            var visible = el.offsetHeight > 200;
+            Plotly.relayout(el, {'xaxis.visible': visible});
+          });
+        ro.observe(el);
+        }"
       )
     return(sparkline)
   }
@@ -201,8 +207,12 @@ server <- function(input, output, session) {
         showcase = build_mini_plots(x),
         full_screen = TRUE,
         em(unique(tempdata$variable_name_full)),
-        p(paste("Latest data is for", unique(tempdata$date_name[tempdata$date == max(tempdata$date)])
-        ))
+        p(
+          paste(
+            "Latest data is for",
+            unique(tempdata$date_name[tempdata$date == max(tempdata$date)])
+          )
+        )
       )
     })
 
