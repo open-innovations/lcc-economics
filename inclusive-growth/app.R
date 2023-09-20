@@ -156,6 +156,7 @@ server <- function(input, output, session) {
         # showcase = bs_icon("bar-chart"),
         showcase = build_mini_plots(x),
         full_screen = TRUE,
+        em(unique(tempdata$variable_name_full)),
         p(paste("Latest data is for", unique(tempdata$date_name[tempdata$date == max(tempdata$date)])
         ))
       )
@@ -170,20 +171,27 @@ server <- function(input, output, session) {
   output$headlineUI <- renderUI({
     plots <- lapply(seq_along(vNames), function(x) {
       renderPlotly({ # change HERE
-        p <- data() |>
+        d1 <- data() |>
           dplyr::filter(geography_name == 'Leeds',
                         variable_name == vNames[x],
                         is_summary,
-                        !is.na(value)) |>
+                        !is.na(value))
+        p <- d1 |>
           ggplot2::ggplot(ggplot2::aes(x = date, y = value)) +
           ggplot2::geom_line(colour = "#ED7218") +
           plot.theme +
           ggplot2::labs(title = vNames[x],
                         subtitle = NULL,
+                        caption = "caption",
                         x = "",
                         y = "%")
         ggplotly(p) |>  # change HERE
-          config(displayModeBar = F)
+          config(displayModeBar = F) |>
+          layout(title = list(text = paste0(vNames[x],
+                                            '<br>',
+                                            '<sup>',
+                                            unique(d1$variable_name_full),
+                                            '</sup>')))
       })
     })
 
@@ -204,7 +212,7 @@ server <- function(input, output, session) {
           dplyr::filter(variable_name == vNames[i]) |>
           dplyr::filter(geography_core_city == TRUE) |>
           dplyr::filter(!is.na(value)) |>
-          dplyr::group_by(geography_name) |> #ajslkdf;ja
+          dplyr::group_by(geography_name) |>
           ggplot2::ggplot(ggplot2::aes(x = date, y = value,
                                        colour = geography_name != "Leeds",
                                        group = geography_name)) +
