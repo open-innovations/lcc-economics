@@ -15,11 +15,14 @@ ui <- bslib::page_fluid(
     collapsible = TRUE,
     windowTitle = "Leeds Inclusive Growth Dashboard",
     header = list(
-      uiOutput("filter_2018"),
-      p(paste(
-        "This is a site in active development. Last update on",
-        format(file.info("all_data.csv")$mtime, "%d %B %Y"))
-      )
+      p(
+        paste(
+          "This is a site in active development. Last update on",
+          format(file.info("all_data.csv")$mtime, "%d %B %Y")
+        ),
+        style = "background-color: #1BACAF!important; text-align: center"
+      ),
+      uiOutput("filter_2018")
     ),
 
     tabPanel(
