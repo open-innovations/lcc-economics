@@ -40,7 +40,8 @@ ui <- bslib::page_fluid(
           "This is a site in active development and subject to change. Last updated on",
           format(file.info("all_data.csv")$mtime, "%d %B %Y at %H:%M")
         ),
-        style = "background-color: #1BACAF!important; text-align: center;
+        style = "background-color: #000000; text-align: center;
+        color: #FFFFFF;
         padding: 10px; margin-top: 10px"
       ),
       uiOutput("filter_2018")
