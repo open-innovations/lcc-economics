@@ -117,7 +117,7 @@ rgva <- readr::read_csv("~/Data/ONS/Regional Accounts/GVA/rgva.csv") |>
                 industry_code, industry_name,
                 variable_name = variable,
                 value) |>
-  dplyr::filter(geography_name %in% c("United Kingdom",
+  dplyr::filter(geography_name %in% c(# "United Kingdom",
                                       "Yorkshire and The Humber",
                                       "West Yorkshire"),
                 industry_code == "Total",
@@ -269,7 +269,8 @@ lcc_sector_data_final <- lcc_sector_data |>
                 value = obs_value) |>
   dplyr::mutate(category = "Employment",
                 is_summary = FALSE,
-                geography_core_city = ifelse(grepl("local authorities", geography_type), TRUE, FALSE))
+                geography_core_city = ifelse(grepl("local authorities", geography_type), TRUE, FALSE),
+                variable_name_full = paste("Number employed in", variable_name))
 
 # backup
 # readr::write_csv(all_data, "inclusive-growth/all_data_backup.csv")
