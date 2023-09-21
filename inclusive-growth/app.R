@@ -148,12 +148,12 @@ server <- function(input, output, session) {
   })
 
   build_mini_plots <- function(x) {
-    sparkline <- plot_ly(mini_plots()[[x]]) %>%
+    sparkline <- plot_ly(mini_plots()[[x]]) |>
       add_lines(
         x = ~date, y = ~value,
         color = I("#ED7218"), span = I(1)#,
         # fill = 'tozeroy', alpha = 0.2
-      ) %>%
+      ) |>
       layout(
         xaxis = list(visible = F, showgrid = F, title = ""),
         yaxis = list(visible = F, showgrid = F, title = ""),
@@ -162,8 +162,8 @@ server <- function(input, output, session) {
         font = list(color = "white"),
         paper_bgcolor = "transparent",
         plot_bgcolor = "transparent"
-      ) %>%
-      config(displayModeBar = F) %>%
+      ) |>
+      config(displayModeBar = F) |>
       htmlwidgets::onRender(
         "function(el) {
           var ro = new ResizeObserver(function() {
@@ -251,102 +251,112 @@ server <- function(input, output, session) {
   })
 
   details <- lapply(seq_along(vNames), function(i) {
+    this_category <- unique(data1$category[data1$variable_name == vNames[i]])
+
+    # build a list of n plots to be rendered on the tabPanel
+    details_charts <- list(
+      renderPlotly({
+        cities <- data() |>
+          dplyr::filter(variable_name == vNames[i]) |>
+          dplyr::filter(geography_core_city == TRUE) |>
+          dplyr::filter(!is.na(value)) |>
+          dplyr::group_by(geography_name) |>
+          ggplot2::ggplot(ggplot2::aes(x = date, y = value,
+                                       colour = geography_name != "Leeds",
+                                       group = geography_name)) +
+          ggplot2::geom_line() +
+          # gghighlight::gghighlight(geography_name == "Leeds",
+          #                          use_direct_label = FALSE) +
+          plot.theme +
+          ggplot2::scale_color_manual(values = c("red", "lightgrey")) +
+          ggplot2::labs(title = "Core Cities",
+                        subtitle = vNames[i],
+                        x = "",
+                        y = "%",
+                        colour = "") +
+          ggplot2::theme(legend.position = "top")
+
+        ggplotly(cities,
+                 tooltip = c("geography_name", "value")) |>
+          layout(showlegend = FALSE)
+      }),
+
+      renderPlotly({
+        others <- data() |>
+          dplyr::filter(variable_name == vNames[i]) |>
+          dplyr::filter(geography_core_city == FALSE |
+                          geography_name == "Leeds") |>
+          dplyr::filter(!is.na(value)) |>
+          ggplot2::ggplot(ggplot2::aes(x = date, y = value,
+                                       colour = geography_name)) +
+          ggplot2::geom_line() +
+          plot.theme +
+          ggplot2::labs(title = "Other geographies",
+                        subtitle = vNames[i],
+                        x = "",
+                        y = "%",
+                        colour = "") +
+          ggplot2::theme(legend.position = "top")
+
+        others <- ggplotly(others)
+      }),
+
+      renderPlotly({
+        breakdown <- data() |>
+          dplyr::filter(category == this_category,
+                        !is_summary,
+                        geography_name == "Leeds",
+                        !is.na(value),
+                        !grepl("G-U", variable_name)) |> # emp by industry
+          dplyr::mutate(variable_name = variable_name |>
+                          stringr::str_remove("% all in employment who work in - ") |>
+                          stringr::str_remove("\\(SIC 2007\\)") |>
+                          stringr::str_remove("% of economically inactive ") |>
+                          stringr::str_remove("% who are economically inactive - "))
+
+        if (this_category == "Economic inactivity") {
+          breakdown <- breakdown |>
+            dplyr::mutate(sub_category = ifelse(grepl("aged", variable_name),
+                                                "Inactivity by age",
+                                                "Inactivity by reason"))
+        }
+
+        if (nrow(breakdown) > 0) {
+          breakdown <- breakdown |>
+            ggplot2::ggplot(ggplot2::aes(x = date, y = value,
+                                         colour = variable_name)) +
+            ggplot2::geom_line() +
+            {if ("sub_category" %in% names(breakdown)) ggplot2::facet_wrap("sub_category") } +
+            plot.theme +
+            ggplot2::labs(title = "Detail",
+                          x = "",
+                          y = "%",
+                          colour = "")
+
+          breakdown <- ggplotly(breakdown)
+        }
+      }),
+
+      if (unique(data1$category[data1$variable_name == vNames[i]]) == "Employment") {
+        p("According to analysis from Data City in 2023, there are over 20,000 net zero jobs across 470 companies in Leeds.")
+      }
+    )
+
     tabPanel(
       titlePanel(paste("Detail and comparisons:", vNames[i])),
       title = vNames[i],
       value = stringr::str_replace_all(vNames[i], " ", "-"),
-
-      list(
-        renderPlotly({ # change HERE
-          cities <- data() |>
-            dplyr::filter(variable_name == vNames[i]) |>
-            dplyr::filter(geography_core_city == TRUE) |>
-            dplyr::filter(!is.na(value)) |>
-            dplyr::group_by(geography_name) |>
-            ggplot2::ggplot(ggplot2::aes(x = date, y = value,
-                                         colour = geography_name != "Leeds",
-                                         group = geography_name)) +
-            ggplot2::geom_line() +
-            # gghighlight::gghighlight(geography_name == "Leeds",
-            #                          use_direct_label = FALSE) +
-            plot.theme +
-            ggplot2::scale_color_manual(values = c("red", "lightgrey"))
-          ggplot2::labs(#title = "Core Cities",
-            subtitle = vNames[i],
-            x = "",
-            y = "%",
-            colour = "") +
-            ggplot2::theme(legend.position = "top")
-
-          cities <- ggplotly(cities, tooltip = c("geography_name", "value"))
-
-          others <- data() |>
-            dplyr::filter(variable_name == vNames[i]) |>
-            dplyr::filter(geography_core_city == FALSE |
-                            geography_name == "Leeds") |>
-            dplyr::filter(!is.na(value)) |>
-            ggplot2::ggplot(ggplot2::aes(x = date, y = value,
-                                         colour = geography_name)) +
-            ggplot2::geom_line() +
-            plot.theme +
-            ggplot2::labs(#title = "Other geographies",
-              subtitle = vNames[i],
-              x = "",
-              y = "%",
-              colour = "") +
-            ggplot2::theme(legend.position = "top")
-
-          others <- ggplotly(others)
-
-          this_category <- unique(data1$category[data1$variable_name == vNames[i]])
-
-          breakdown <- data() |>
-            dplyr::filter(category == this_category,
-                          !is_summary,
-                          geography_name == "Leeds",
-                          !is.na(value),
-                          !grepl("G-U", variable_name)) |> # emp by industry
-            dplyr::mutate(variable_name = variable_name |>
-                            stringr::str_remove("% all in employment who work in - ") |>
-                            stringr::str_remove("\\(SIC 2007\\)") |>
-                            stringr::str_remove("% of economically inactive ") |>
-                            stringr::str_remove("% who are economically inactive - "))
-
-          if (this_category == "Economic inactivity") {
-            breakdown <- breakdown |>
-              dplyr::mutate(sub_category = ifelse(grepl("aged", variable_name),
-                                                  "Inactivity by age",
-                                                  "Inactivity by reason"))
-          }
-
-          if (nrow(breakdown) > 0) {
-            breakdown <- breakdown |>
-              ggplot2::ggplot(ggplot2::aes(x = date, y = value,
-                                           colour = variable_name)) +
-              ggplot2::geom_line() +
-              {if ("sub_category" %in% names(breakdown)) ggplot2::facet_wrap("sub_category") } +
-              plot.theme +
-              ggplot2::labs(x = "",
-                            y = "%",
-                            colour = "")
-
-            breakdown <- ggplotly(breakdown)
-
-            # print((cities + others) / breakdown)
-            subplot(style(cities, showlegend = F), others, breakdown, nrows = 2)
-          } else {
-            # print(cities + others)
-            subplot(style(cities, showlegend = F), others)
-          }
-        }),
-        if (unique(data1$category[data1$variable_name == vNames[i]]) == "Employment") {
-          p("According to analysis from Data City in 2023, there are over 20,000 net zero jobs across 470 companies in Leeds.")
-        }
+      p(unique(data1$variable_name_full[data1$variable_name == vNames[i]])),
+      layout_column_wrap(
+        width = 1/2,
+        !!!details_charts
       )
     )
   })
 
   # Build details navbarMenu
+  # This is done differently to the rest as the contents are dynamic
+  # depending on what it is in the data
   details_menu <- do.call(navbarMenu, c("Details", details))
 
   # Insert details navbarMenu into main navbar
