@@ -109,7 +109,8 @@ rgva_lad <- readr::read_csv("~/Data/rgva_lad.csv") |>
                 category = "GVA",
                 is_summary = TRUE,
                 geography_core_city = TRUE,
-                variable_name = "GVA")
+                variable_name = "GVA",
+                variable_name_full = "Gross Value Added")
 
 rgva <- readr::read_csv("~/Data/ONS/Regional Accounts/GVA/rgva.csv") |>
   dplyr::select(date = dates.date,
