@@ -18,10 +18,13 @@ logos <- div(
     ),
     href = "https://open-innovations.org", target = "_blank"
   ),
-  img(
-    src = "lcc-logo.png",
-    height = 50,
-    style = "float:right"
+  a(
+    img(
+      src = "lcc-logo.png",
+      height = 50,
+      style = "float:right"
+    ),
+    href = "https://leeds.gov.uk", target = "_blank"
   ),
   style = "height:50px; margin-top: 10px"
 )
