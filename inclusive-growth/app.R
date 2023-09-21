@@ -30,15 +30,12 @@ logos <- div(
 )
 
 ui <- bslib::page_fluid(
-  #fluidPage(
   bslib::page_navbar(
-  #navbarPage(
     title = "Leeds Inclusive Growth Dashboard",
     id = "navbar",
     collapsible = TRUE,
     bg = "#1BACAF",
     window_title = "Leeds Inclusive Growth Dashboard",
-    #windowTitle = "Leeds Inclusive Growth Dashboard",
     header = list(
       logos,
       p(
@@ -50,7 +47,6 @@ ui <- bslib::page_fluid(
         color: #FFFFFF;
         padding: 10px; margin-top: 10px"
       ),
-      # uiOutput("filter_2018")
       checkboxInput("filter_2018",
                     label = "Show only data from 2018 onwards",
                     value = TRUE)
@@ -135,12 +131,6 @@ server <- function(input, output, session) {
     }
   })
 
-  # output$filter_2018 <- renderUI({
-  #   checkboxInput("filter_2018",
-  #                 label = "Show only data from 2018 onwards",
-  #                 value = TRUE)
-  # })
-
   # Generate dynamic UI components ----------------------------------------
 
   mini_plots <- reactive({
@@ -157,8 +147,7 @@ server <- function(input, output, session) {
     sparkline <- plot_ly(mini_plots()[[x]]) |>
       add_lines(
         x = ~date, y = ~value,
-        color = I("#ED7218"), span = I(1)#,
-        # fill = 'tozeroy', alpha = 0.2
+        color = I("#ED7218"), span = I(1)
       ) |>
       layout(
         xaxis = list(visible = F, showgrid = F, title = ""),
@@ -204,7 +193,6 @@ server <- function(input, output, session) {
         } else {
           paste0(temp_value, "%")
         },
-        # showcase = bs_icon("bar-chart"),
         showcase = build_mini_plots(x),
         full_screen = TRUE,
         em(unique(tempdata$variable_name_full), style = "font-size:0.8em"),
@@ -225,7 +213,7 @@ server <- function(input, output, session) {
 
   output$headlineUI <- renderUI({
     plots <- lapply(seq_along(vNames), function(x) {
-      renderPlotly({ # change HERE
+      renderPlotly({
         d1 <- data() |>
           dplyr::filter(geography_name == 'Leeds',
                         variable_name == vNames[x],
@@ -240,7 +228,7 @@ server <- function(input, output, session) {
                         caption = "caption",
                         x = "",
                         y = "%")
-        ggplotly(p) |>  # change HERE
+        ggplotly(p) |>
           config(displayModeBar = F) |>
           layout(title = list(text = paste0(vNames[x],
                                             '<br>',
@@ -271,8 +259,6 @@ server <- function(input, output, session) {
                                        colour = geography_name != "Leeds",
                                        group = geography_name)) +
           ggplot2::geom_line() +
-          # gghighlight::gghighlight(geography_name == "Leeds",
-          #                          use_direct_label = FALSE) +
           plot.theme +
           ggplot2::scale_color_manual(values = c("red", "lightgrey")) +
           ggplot2::labs(title = "Core Cities",
