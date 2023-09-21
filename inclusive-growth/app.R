@@ -78,7 +78,10 @@ ui <- bslib::page_fluid(
     tabPanel(
       title = "About",
       value = "about",
-      titlePanel("About the Inclusive Growth Dashboard"),
+      titlePanel("About"),
+      h3("About this dashboard"),
+      p("This microsite was built by Open Innovations as part of a partnership with Leeds City Council where Open Innovations provides economic and data science expertise to the Council to help them exploit developments in economic data to better support the lives of people living and working in the city."),
+      p("This microsite, and the code that underpins it, is open source and freely available in a GitHub repository at https://github.com/open-innovations/lcc-economics/inclusive-growth/."),
       h3("Data sources:"),
       p("Data on employment, self employment, unemployment, economic activity, economic inactivity, and qualifications is sourced from the ONS Annual Population Survey/Labour Force Survey and accessed via NOMIS"),
       p("Claimant count data is sourced from an experimental series which counts the number of people claiming Jobseeker's Allowance plus those who claim Universal Credit and are required to seek work and be available for work, and accessed via NOMIS"),
