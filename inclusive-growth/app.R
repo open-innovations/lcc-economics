@@ -8,13 +8,13 @@ library(plotly)
 
 logos <- div(
   p("A microsite built by Open Innovations",
-    style = "font-size: 0.8em; float:right; text-align:center"),
+    style = "font-size: 0.8em; float:right; text-align:center; line-height: 50px"),
   a(
     img(
       src = "oi-square.png",
       height = 50,
       width = 50,
-      style = "float:right; margin-left: 10px"
+      style = "float:right; margin-left: 10px; margin-right: 10px"
     ),
     href = "https://open-innovations.org", target = "_blank"
   ),
