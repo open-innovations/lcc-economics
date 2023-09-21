@@ -343,7 +343,7 @@ server <- function(input, output, session) {
     )
 
     tabPanel(
-      titlePanel(paste("Detail and comparisons:", vNames[i])),
+      titlePanel(paste("Detail & comparisons:", vNames[i])),
       title = vNames[i],
       value = stringr::str_replace_all(vNames[i], " ", "-"),
       p(unique(data1$variable_name_full[data1$variable_name == vNames[i]])),
@@ -357,7 +357,7 @@ server <- function(input, output, session) {
   # Build details navbarMenu
   # This is done differently to the rest as the contents are dynamic
   # depending on what it is in the data
-  details_menu <- do.call(navbarMenu, c("Details", details))
+  details_menu <- do.call(navbarMenu, c("Detail & comparisons", details))
 
   # Insert details navbarMenu into main navbar
   insertTab("navbar",
