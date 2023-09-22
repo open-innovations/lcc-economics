@@ -1,4 +1,5 @@
 library(shiny)
+library(shinyjs)
 library(patchwork)
 library(bslib)
 library(DT)
@@ -27,6 +28,7 @@ logos <- div(
 )
 
 ui <- bslib::page_fluid(
+  useShinyjs(),
   bslib::page_navbar(
     title = "Leeds Inclusive Growth Dashboard",
     id = "navbar",
@@ -179,6 +181,7 @@ server <- function(input, output, session) {
       temp_value <- tempdata$value[tempdata$date == max(tempdata$date)]
 
       value_box(
+        id = paste0("vb", x),
         style = 'background-color: #1BACAF!important;',
         title = vNames[x],
         value = if (vNames[x] == "GVA") {
@@ -191,7 +194,7 @@ server <- function(input, output, session) {
           paste0(temp_value, "%")
         },
         showcase = build_mini_plots(x),
-        full_screen = TRUE,
+        full_screen = FALSE,
         em(unique(tempdata$variable_name_full), style = "font-size:0.8em"),
         p(
           paste(
@@ -206,6 +209,14 @@ server <- function(input, output, session) {
       width = 1/4,
       !!!latest_indictors
     )
+  })
+
+  # build event listeners for clicking on the value boxes
+  lapply(seq_along(vNames), function(x) {
+    onclick(paste0("vb", x), {
+      updateNavbarPage(inputId = "navbar",
+                       selected = vNames[x])
+    })
   })
 
   output$headlineUI <- renderUI({
@@ -334,7 +345,8 @@ server <- function(input, output, session) {
     tabPanel(
       titlePanel(paste("Detail & comparisons:", vNames[i])),
       title = vNames[i],
-      value = stringr::str_replace_all(vNames[i], " ", "-"),
+      #value = stringr::str_replace_all(vNames[i], " ", "-"),
+      value = vNames[i],
       p(unique(data1$variable_name_full[data1$variable_name == vNames[i]])),
       layout_column_wrap(
         width = 1/2,
