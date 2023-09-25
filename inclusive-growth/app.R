@@ -349,7 +349,7 @@ server <- function(input, output, session) {
       value = vNames[i],
       p(unique(data1$variable_name_full[data1$variable_name == vNames[i]])),
       layout_column_wrap(
-        width = 1/2,
+        width = 1/1,
         !!!details_charts
       )
     )
