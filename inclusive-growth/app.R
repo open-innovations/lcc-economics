@@ -124,18 +124,16 @@ server <- function(input, output, session) {
   vNames <- c(
       "Economic activity",
       "Economic inactivity",
-      "Unemployment",
-      "Youth unemployment",
-
       "Employment",
       "Self employed",
 
+      "Unemployment",
+      "Youth unemployment",
       "Claimant count",
       "Children in Low Income Families",
 
       "GVA",
       "GVA per filled job",
-
       "NVQ4+",
       "Population")
 
