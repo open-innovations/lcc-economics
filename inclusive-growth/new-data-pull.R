@@ -43,9 +43,13 @@ nomis_data <- setNames(nomis, tolower(names(nomis))) |>
   )) |>
   dplyr::filter(!grepl("% all in employment who work in", variable_name))
 
+nomis_cc_url <- "https://www.nomisweb.co.uk/api/v01/dataset/NM_162_1.data.csv?geography=1811939401,1811939460,1811939630,1811939683,1811939712,1811939378,1811939357,1811939339,1811939405,1811939397,2092957697,1853882371,2013265923&gender=0&age=0&measure=2&measures=20100"
+
+nomis_cc_temp <- readr::read_csv(nomis_cc_url, name_repair = tolower)
+
 nomis_cc <- readr::read_csv("data-raw/inclusive-growth-dashboard/nomis-cc.csv")
 
-nomis_cc_data <- setNames(nomis_cc, tolower(names(nomis_cc))) |>
+nomis_cc_data <- nomis_cc_temp |>
   dplyr::filter(gender_name == "Total") |>
   dplyr::select(date, date_name,
                 geography_code, geography_name, geography_type,
@@ -53,13 +57,14 @@ nomis_cc_data <- setNames(nomis_cc, tolower(names(nomis_cc))) |>
                 measures_code = measures, variable_name_full = measures_name, age_name,
                 value = obs_value) |>
   dplyr::mutate(date = as.Date(paste0(date, "-01"))) |>
-  dplyr::filter(variable_name != "Claimant count",
+  dplyr::filter(#variable_name != "Claimant count",
                 !is.na(value)) |>
   dplyr::mutate(category = "Claimant count") |>
-  dplyr::mutate(is_summary = dplyr::case_when(
-    age_name == "All categories: Age 16+" ~ TRUE,
-    TRUE ~ FALSE
-  )) |>
+  # dplyr::mutate(is_summary = dplyr::case_when(
+  #   age_name == "All categories: Age 16+" ~ TRUE,
+  #   TRUE ~ FALSE
+  # )) |>
+  dplyr::mutate(is_summary = TRUE) |>
   dplyr::mutate(variable_name = "Claimant count")
 
 all_data <- dplyr::bind_rows(nomis_data, nomis_cc_data) |>
