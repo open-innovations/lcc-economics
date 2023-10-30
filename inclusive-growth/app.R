@@ -290,6 +290,10 @@ server <- function(input, output, session) {
     onclick(paste0("vb", x), {
       updateNavbarPage(inputId = "navbar",
                        selected = vNames[x])
+      runjs('
+            var elem = document.getElementsByClassName("dropdown-menu")[0];
+            elem.setAttribute("class", "dropdown-menu")
+            ')
     })
   })
 
