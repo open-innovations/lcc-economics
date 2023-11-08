@@ -11,46 +11,195 @@ geographies <- list(
 
 # Older stuff -------------------------------------------------------------
 
-nomis_url <- "https://www.nomisweb.co.uk/api/v01/dataset/NM_17_5.data.csv?geography=1811939401,1811939460,1811939630,1811939683,1811939712,1811939378,1811939357,1811939339,1811939405,1811939397,2092957697,1853882371,2013265923&variable=74,1213,1219,1220,117,118,1329...1338,18,45,84,111,290,720,344,1493...1499,1487,1488&measures=20599,21001,21002,21003&uid=0xce1485b8af597e9021c978a63225cd5b792607df"
+# nomis_url <- "https://www.nomisweb.co.uk/api/v01/dataset/NM_17_5.data.csv?geography=1811939401,1811939460,1811939630,1811939683,1811939712,1811939378,1811939357,1811939339,1811939405,1811939397,2092957697,1853882371,2013265923&variable=74,1213,1219,1220,117,118,1329...1338,18,45,84,111,290,720,344,1493...1499,1487,1488&measures=20599,21001&uid=0xce1485b8af597e9021c978a63225cd5b792607df"
+#
+# nomis <- readr::read_csv(nomis_url)
+#
+# nomis_data <- setNames(nomis, tolower(names(nomis))) |>
+#   dplyr::select(date, date_name,
+#                 geography_code, geography_name, geography_type,
+#                 variable_code, variable_name,
+#                 measures_code = measures, measures_name,
+#                 value = obs_value) |>
+#   # dplyr::filter(measures_name == "Variable" | measures_name == "Numerator") |>
+#   dplyr::mutate(date = as.Date(paste0(date, "-01"))) |>
+#   dplyr::mutate(category = dplyr::case_when(
+#     grepl("% all in employment|Employment", variable_name) ~ "Employment",
+#     grepl("Economic activity", variable_name) ~ "Economic activity",
+#     grepl("Unemployment", variable_name) ~ "Unemployment",
+#     grepl("self employed", variable_name) ~ "Self employment",
+#     grepl("economically inactive", variable_name) ~ "Economic inactivity",
+#     grepl("NVQ", variable_name) ~ "Qualifications",
+#   )) |>
+#   dplyr::mutate(is_summary = dplyr::case_when(
+#     variable_name %in% c("% in employment who are self employed - aged 16-64",
+#                          "Unemployment rate - aged 16-24",
+#                          "Economic activity rate - aged 16-64",
+#                          "Employment rate - aged 16-64",
+#                          "Unemployment rate - aged 16-64",
+#                          "% who are economically inactive - aged 16-64",
+#                          "% with NVQ4+ - aged 16-64") ~ TRUE,
+#     TRUE ~ FALSE
+#   )) |>
+#   dplyr::filter(!grepl("% all in employment who work in", variable_name))
 
-nomis <- readr::read_csv(nomis_url)
+geographies <- list(
+  target = "1811939401",
+  core_cities = c("1811939460", "1811939630", "1811939683", "1811939712",
+                  "1811939378", "1811939357", "1811939339", "1811939405",
+                  "1811939397"
+  ),
+  west_yorkshire = "1853882371",
+  yorkshire_humber = "2013265923",
+  united_kingdom = "2092957697"
+)
 
-nomis_data <- setNames(nomis, tolower(names(nomis))) |>
-  dplyr::select(date, date_name,
-                geography_code, geography_name, geography_type,
-                variable_code, variable_name,
-                measures_code = measures, measures_name,
-                value = obs_value) |>
-  dplyr::filter(measures_name == "Variable") |>
-  dplyr::mutate(date = as.Date(paste0(date, "-01"))) |>
-  dplyr::mutate(category = dplyr::case_when(
-    grepl("% all in employment|Employment", variable_name) ~ "Employment",
-    grepl("Economic activity", variable_name) ~ "Economic activity",
-    grepl("Unemployment", variable_name) ~ "Unemployment",
-    grepl("self employed", variable_name) ~ "Self employment",
-    grepl("economically inactive", variable_name) ~ "Economic inactivity",
-    grepl("NVQ", variable_name) ~ "Qualifications",
-  )) |>
-  dplyr::mutate(is_summary = dplyr::case_when(
-    variable_name %in% c("% in employment who are self employed - aged 16-64",
-                         "Unemployment rate - aged 16-24",
-                         "Economic activity rate - aged 16-64",
-                         "Employment rate - aged 16-64",
-                         "Unemployment rate - aged 16-64",
-                         "% who are economically inactive - aged 16-64",
-                         "% with NVQ4+ - aged 16-64") ~ TRUE,
-    TRUE ~ FALSE
-  )) |>
-  dplyr::filter(!grepl("% all in employment who work in", variable_name))
+geogs <- unlist(geographies)
 
-nomis_cc_url <- "https://www.nomisweb.co.uk/api/v01/dataset/NM_162_1.data.csv?geography=1811939401,1811939460,1811939630,1811939683,1811939712,1811939378,1811939357,1811939339,1811939405,1811939397,2092957697,1853882371,2013265923&gender=0&age=0&measure=2&measures=20100"
+variables <- list(
+  employment = c(employment = 45 #,
+                 # employment_by_industry = 1329:1338
+  ),
+  unemployment = 84,
+  economic_activity = 18,
+  economic_inactivity = c(inactivity = 111,
+                          inactivity_by_age = c(1219, 1220, 117, 118),
+                          inactivity_reasons = 1493:1499,
+                          inactivity_wants_job = 1487:1488),
+  self_employment = 74,
+  youth_unemployment = 1213,
+  qualifications = c(344, 720, 290)
+)
+
+vars <- unlist(variables)
+
+measures <- list(
+  variable = 20599,
+  numerator = 21001
+)
+
+meas <- unlist(measures)
+
+build_nomis_url <- function(geography, variable, measures) {
+  endpoint <- "https://www.nomisweb.co.uk/api/v01/dataset/NM_17_5.data.csv?"
+  geography <- paste0("geography=", paste(geography, collapse = ","))
+  variable <- paste0("variable=", paste(variable, collapse = ","))
+  measure <- paste0("measures=", paste(measures, collapse = ","))
+  selectors <- paste(geography, variable, measure, sep = "&")
+  url <- paste0(endpoint, selectors, "&uid=0xce1485b8af597e9021c978a63225cd5b792607df")
+  return(url)
+}
+
+build_nomis_url(geogs, vars, meas)
+
+# readr::read_csv(build_nomis_url(geogs, vars, meas))
+
+retrieve_nomis_data <- function(url) {
+  readr::read_csv(url, name_repair = tolower) |>
+    dplyr::select(date, date_name,
+                  geography_code, geography_name, geography_type,
+                  variable_code, variable_name,
+                  measures_code = measures, measures_name,
+                  value = obs_value) |>
+    dplyr::mutate(date = as.Date(paste0(date, "-01")))
+}
+
+data <- list()
+data$employment <- retrieve_nomis_data(
+  build_nomis_url(unlist(geographies),
+                  unlist(variables$employment),
+                  unlist(measures))
+) |>
+  dplyr::mutate(category = "Employment") |>
+  dplyr::mutate(is_summary = TRUE)
+
+data$unemployment <- retrieve_nomis_data(
+  build_nomis_url(unlist(geographies),
+                  unlist(variables$unemployment),
+                  unlist(measures))
+) |>
+  dplyr::mutate(category = "Unemployment") |>
+  dplyr::mutate(is_summary = TRUE)
+
+data$economic_activity <- retrieve_nomis_data(
+  build_nomis_url(unlist(geographies),
+                  unlist(variables$economic_activity),
+                  unlist(measures))
+) |>
+  dplyr::mutate(category = "Economic activity") |>
+  dplyr::mutate(is_summary = TRUE)
+
+data$economic_inactivity <- retrieve_nomis_data(
+  build_nomis_url(unlist(geographies),
+                  unlist(variables$economic_inactivity),
+                  unlist(measures))
+) |>
+  dplyr::mutate(category = "Economic inactivity") |>
+  dplyr::mutate(is_summary = ifelse(variable_code == 111, TRUE, FALSE))
+
+data$self_employment <- retrieve_nomis_data(
+  build_nomis_url(unlist(geographies),
+                  unlist(variables$self_employment),
+                  unlist(measures))
+) |>
+  dplyr::mutate(category = "Self employment") |>
+  dplyr::mutate(is_summary = TRUE)
+
+data$youth_unemployment <- retrieve_nomis_data(
+  build_nomis_url(unlist(geographies),
+                  unlist(variables$youth_unemployment),
+                  unlist(measures))
+) |>
+  dplyr::mutate(category = "Youth unemployment") |>
+  dplyr::mutate(is_summary = TRUE)
+
+data$qualifications <- retrieve_nomis_data(
+  build_nomis_url(unlist(geographies),
+                  unlist(variables$qualifications),
+                  unlist(measures))
+) |>
+  dplyr::mutate(category = "Qualifications") |>
+  dplyr::mutate(is_summary = ifelse(variable_code == 290, TRUE, FALSE))
+
+nomis_data <- dplyr::bind_rows(data) |>
+  dplyr::mutate(geography_core_city = ifelse(
+    !geography_type %in% c("countries",
+                           "combined authorities",
+                           "regions"),
+    TRUE,
+    FALSE)) |>
+  # temporary fixes to align to old style formatting
+  dplyr::mutate(variable_name_full = variable_name) |>
+  dplyr::mutate(variable_name = dplyr::case_when(
+    variable_name == "% in employment who are self employed - aged 16-64" ~
+      "Self employed",
+    variable_name == "Unemployment rate - aged 16-24" ~
+      "Youth unemployment",
+    variable_name == "Economic activity rate - aged 16-64" ~
+      "Economic activity",
+    variable_name == "Employment rate - aged 16-64" ~
+      "Employment",
+    variable_name == "Unemployment rate - aged 16-64" ~
+      "Unemployment",
+    variable_name == "% who are economically inactive - aged 16-64" ~
+      "Economic inactivity",
+    variable_name == "% with NVQ4+ - aged 16-64" ~
+      "NVQ4+",
+    variable_name == "% with NVQ3+ - aged 16-64" ~
+      "NVQ3+",
+    variable_name == "% with no qualifications (NVQ) - aged 16-64" ~
+      "No NVQs",
+    TRUE ~ variable_name
+  ))
+
+nomis_cc_url <- "https://www.nomisweb.co.uk/api/v01/dataset/NM_162_1.data.csv?geography=1811939401,1811939460,1811939630,1811939683,1811939712,1811939378,1811939357,1811939339,1811939405,1811939397,2092957697,1853882371,2013265923&gender=0&age=0&measure=1,2&measures=20100"
 
 nomis_cc_temp <- readr::read_csv(nomis_cc_url, name_repair = tolower)
 
 nomis_cc <- readr::read_csv("data-raw/inclusive-growth-dashboard/nomis-cc.csv")
 
 nomis_cc_data <- nomis_cc_temp |>
-  dplyr::filter(gender_name == "Total") |>
+  # dplyr::filter(gender_name == "Total") |>
   dplyr::select(date, date_name,
                 geography_code, geography_name, geography_type,
                 variable_code = measure_code, variable_name = measure_name,
@@ -59,6 +208,7 @@ nomis_cc_data <- nomis_cc_temp |>
   dplyr::mutate(date = as.Date(paste0(date, "-01"))) |>
   dplyr::filter(#variable_name != "Claimant count",
                 !is.na(value)) |>
+  dplyr::mutate(measures_name = ifelse(variable_code == 1, "Numerator", "Variable")) |>
   dplyr::mutate(category = "Claimant count") |>
   # dplyr::mutate(is_summary = dplyr::case_when(
   #   age_name == "All categories: Age 16+" ~ TRUE,
