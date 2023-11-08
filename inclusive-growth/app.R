@@ -36,7 +36,6 @@ ui <- bslib::page_fluid(
     bg = "#1BACAF",
     window_title = "Leeds Inclusive Growth Dashboard",
     header = list(
-      logos,
       p(
         paste(
           "This is a site in active development and subject to change. Last updated on",
@@ -235,7 +234,7 @@ server <- function(input, output, session) {
     sparkline <- plot_ly(mini_plots()[[x]]) |>
       add_lines(
         x = ~date, y = ~value,
-        color = I("#ED7218"), span = I(1)
+        color = I("#FFFFFF"), span = I(1)
       ) |>
       layout(
         xaxis = list(visible = F, showgrid = F, title = ""),
