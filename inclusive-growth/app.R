@@ -48,7 +48,13 @@ ui <- bslib::page_fluid(
       ),
       checkboxInput("filter_2018",
                     label = "Show only data from 2018 onwards",
-                    value = TRUE)
+                    value = TRUE
+      ),
+      radioButtons("rate_count",
+                   "Display values as",
+                   c("rates", "counts"),
+                   inline = TRUE
+      )
     ),
     footer = logos,
 
@@ -135,14 +141,23 @@ server <- function(input, output, session) {
       "GVA",
       "GVA per filled job",
       "NVQ4+",
-      "Population")
+      "Population"
+      )
 
   data <- reactive({
     if (input$filter_2018) {
-      dplyr::filter(data1, date >= "2018-01-01")
+      d <- dplyr::filter(data1, date >= "2018-01-01")
     } else {
-      data1
+      d <- data1
     }
+
+    if (input$rate_count == "rates") {
+      d <- dplyr::filter(d, measures_name == "Variable" | is.na(measures_name))
+    } else {
+      d <- dplyr::filter(d, measures_name == "Numerator" | is.na(measures_name))
+    }
+
+    return(d)
   })
 
   descriptions <- list(
@@ -265,7 +280,7 @@ server <- function(input, output, session) {
         } else if (vNames[x] == "GVA per filled job") {
           paste0("£", format(round(temp_value), big.mark = ","))
         } else {
-          paste0(temp_value, "%")
+          paste0(temp_value, ifelse(input$rate_count == "rates", "%", ""))
         },
         showcase = build_mini_plots(x),
         full_screen = FALSE,
@@ -426,7 +441,7 @@ server <- function(input, output, session) {
       #value = stringr::str_replace_all(vNames[i], " ", "-"),
       value = vNames[i],
       p(unique(data1$variable_name_full[data1$variable_name == vNames[i]])),
-      descriptions[[vNames[i]]],
+      div(descriptions[[vNames[i]]], style = "margin-bottom:20px"),
       layout_column_wrap(
         width = 1/1,
         !!!details_charts
