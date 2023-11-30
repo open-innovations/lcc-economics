@@ -311,6 +311,18 @@ server <- function(input, output, session) {
     })
   })
 
+  y_axis_label <- function(vName) {
+    if (vName == "GVA") {
+      label <- "£m"
+    } else if (vName == "Population") {
+      label = "Number"
+    } else if (vName == "GVA per filled job") {
+      label = "£"
+    } else {
+      ifelse(input$rate_count == "rates", "%", "Number")
+    }
+  }
+
   output$headlineUI <- renderUI({
     plots <- lapply(seq_along(vNames), function(x) {
       renderPlotly({
