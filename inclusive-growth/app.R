@@ -279,7 +279,7 @@ server <- function(input, output, session) {
         } else if (vNames[x] == "GVA per filled job") {
           paste0("£", format(round(temp_value), big.mark = ","))
         } else {
-          paste0(temp_value, ifelse(input$rate_count == "rates", "%", ""))
+          paste0(format(temp_value, big.mark = ","), ifelse(input$rate_count == "rates", "%", ""))
         },
         showcase = build_mini_plots(x),
         full_screen = FALSE,
