@@ -339,7 +339,7 @@ server <- function(input, output, session) {
                         subtitle = NULL,
                         caption = "caption",
                         x = "",
-                        y = "%")
+                        y = y_axis_label(vNames[x]))
         ggplotly(p) |>
           config(displayModeBar = F) |>
           layout(title = list(text = paste0(vNames[x],
@@ -376,7 +376,7 @@ server <- function(input, output, session) {
           ggplot2::labs(title = "Core Cities",
                         subtitle = vNames[i],
                         x = "",
-                        y = "%",
+                        y = y_axis_label(vNames[i]),
                         colour = "") +
           ggplot2::theme(legend.position = "top")
 
@@ -398,7 +398,7 @@ server <- function(input, output, session) {
           ggplot2::labs(title = "Other geographies",
                         subtitle = vNames[i],
                         x = "",
-                        y = "%",
+                        y = y_axis_label(vNames[i]),
                         colour = "") +
           ggplot2::theme(legend.position = "top")
 
@@ -434,7 +434,7 @@ server <- function(input, output, session) {
             plot.theme +
             ggplot2::labs(title = "Detail",
                           x = "",
-                          y = "%",
+                          y = y_axis_label(vNames[i]),
                           colour = "")
 
           breakdown <- ggplotly(breakdown)
