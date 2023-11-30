@@ -341,13 +341,16 @@ mype_data_final <- mype_data |>
 
 clif_rate <- dplyr::left_join(clif2, mype_data_final,
                               by = c("date", "geography_name")) |>
-  dplyr::mutate(value = round((value.x / value.y * 100), 1)) |>
+  dplyr::mutate(rate = round((value.x / value.y * 100), 1)) |>
   dplyr::select(date, date_name,
                 geography_code, geography_name, geography_type = geography_type.x,
                 variable_name = variable_name.x,
-                value,
+                rate,
+                count = value.x,
                 category, is_summary, geography_core_city) |>
-  dplyr::mutate(variable_name_full = "Proportion of children living in relative low income")
+  tidyr::pivot_longer(cols = c(rate, count), names_to = "measures_name") |>
+  dplyr::mutate(measures_name = ifelse(measures_name == "rate", "Variable", "Numerator")) |>
+  dplyr::mutate(variable_name_full = "Children living in relative low income")
 
 # final grouping
 
